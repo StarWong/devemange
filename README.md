@@ -19,3 +19,6 @@
 * 12) 发布管理
 * 13) SVN日志
 * 14) 产品原型Axure
+
+![preview](https://github.com/mrlong/devemange/blob/master/App/task.PNG)
+![preview](https://github.com/mrlong/devemange/blob/master/App/svn.jpg)
