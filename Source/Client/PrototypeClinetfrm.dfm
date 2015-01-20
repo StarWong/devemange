@@ -1,6 +1,6 @@
 inherited PrototypeClientDlg: TPrototypeClientDlg
-  Left = 306
-  Top = 75
+  Left = 271
+  Top = 177
   Width = 844
   Caption = #20135#21697#21407#22411
   OldCreateOrder = True
@@ -17,6 +17,15 @@ inherited PrototypeClientDlg: TPrototypeClientDlg
     OnChanging = pgcPrtyChanging
     object tsList: TTabSheet
       Caption = #21407#22411#21015#34920
+      object spl1: TSplitter
+        Left = 530
+        Top = 41
+        Width = 6
+        Height = 416
+        Align = alRight
+        Color = clBtnFace
+        ParentColor = False
+      end
       object pnlTools: TPanel
         Left = 0
         Top = 0
@@ -47,7 +56,7 @@ inherited PrototypeClientDlg: TPrototypeClientDlg
       object dbgrdList: TDBGrid
         Left = 0
         Top = 41
-        Width = 820
+        Width = 530
         Height = 416
         Align = alClient
         DataSource = dsList
@@ -163,6 +172,18 @@ inherited PrototypeClientDlg: TPrototypeClientDlg
           Caption = #20840#37096#25968#25454
           TabOrder = 4
         end
+      end
+      object lvAttach: TListView
+        Left = 536
+        Top = 41
+        Width = 284
+        Height = 416
+        Align = alRight
+        Columns = <>
+        LargeImages = ilAttach
+        PopupMenu = pmAttach
+        TabOrder = 3
+        OnDblClick = lvAttachDblClick
       end
     end
     object tsEdit: TTabSheet
@@ -297,6 +318,17 @@ inherited PrototypeClientDlg: TPrototypeClientDlg
       Caption = #20840#37096#25968#25454
       OnExecute = act_RefreshDataExecute
     end
+    object actAttach_Addfile: TAction
+      Category = #38468#20214
+      Caption = #22686#21152#38468#20214'...'
+      OnExecute = actAttach_AddfileExecute
+    end
+    object actAttach_downfile: TAction
+      Category = #38468#20214
+      Caption = #19979#36733#38468#20214'('#21452#20987')...'
+      OnExecute = actAttach_downfileExecute
+      OnUpdate = actAttach_downfileUpdate
+    end
   end
   object dsList: TDataSource
     DataSet = cdsPrtyList
@@ -307,8 +339,34 @@ inherited PrototypeClientDlg: TPrototypeClientDlg
     Aggregates = <>
     Params = <>
     BeforePost = cdsPrtyListBeforePost
+    AfterScroll = cdsPrtyListAfterScroll
     OnNewRecord = cdsPrtyListNewRecord
     Left = 88
     Top = 40
+  end
+  object pmAttach: TPopupMenu
+    AutoHotkeys = maManual
+    Left = 128
+    Top = 8
+    object N1: TMenuItem
+      Action = actAttach_Addfile
+    end
+    object N2: TMenuItem
+      Action = actAttach_downfile
+    end
+  end
+  object ilAttach: TImageList
+    Height = 32
+    Width = 32
+    Left = 560
+    Top = 16
+  end
+  object dlgOpen1: TOpenDialog
+    Left = 600
+    Top = 16
+  end
+  object dlgSave1: TSaveDialog
+    Left = 640
+    Top = 16
   end
 end

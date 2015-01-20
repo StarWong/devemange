@@ -1029,6 +1029,7 @@ create table TB_PROTOTYPE(
 	ZUSER_ID int  not null,            --创建人ID
 	PRTY_DATETIME datetime,            --创建时间
 	PRTY_DIRNAME varchar(100),         --目录名称,用于指定浏览的文件地址
+	PRTY_ID   int IDENTITY (1, 1) not null, --用于保存附件用的id , 2015-1-20
   	
 	constraint PK_TB_PROTOTYPE primary key(PRTY_GUID) 
 )

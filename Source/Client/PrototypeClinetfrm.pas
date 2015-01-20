@@ -13,7 +13,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, BaseChildfrm, ComCtrls, ExtCtrls, Grids, DBGrids, StdCtrls,
-  Buttons, ActnList, OleCtrls, SHDocVw, DB, DBClient, Mask, DBCtrls;
+  Buttons, ActnList, OleCtrls, SHDocVw, DB, DBClient, Mask, DBCtrls, Menus,
+  ImgList;
 
 type
 
@@ -21,6 +22,13 @@ type
     fIndex : Integer;
     fIndexCount : Integer;
     fWhereStr : string; //分页的where条件
+  end;
+
+  PAttachFileRec  = ^TAttachFileRec;
+  TAttachFileRec = record
+    fName : string;
+    ffileid : Integer;
+    fFileExt : string;
   end;
 
   TPrototypeClientDlg = class(TBaseChildDlg)
@@ -59,6 +67,16 @@ type
     btnLastPage: TBitBtn;
     act_RefreshData: TAction;
     btnRefreshData: TBitBtn;
+    lvAttach: TListView;
+    spl1: TSplitter;
+    pmAttach: TPopupMenu;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    actAttach_Addfile: TAction;
+    actAttach_downfile: TAction;
+    ilAttach: TImageList;
+    dlgOpen1: TOpenDialog;
+    dlgSave1: TSaveDialog;
     procedure act_AddProExecute(Sender: TObject);
     procedure dbgrdListDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
@@ -82,9 +100,15 @@ type
     procedure act_LastPageUpdate(Sender: TObject);
     procedure act_LastPageExecute(Sender: TObject);
     procedure act_RefreshDataExecute(Sender: TObject);
+    procedure cdsPrtyListAfterScroll(DataSet: TDataSet);
+    procedure actAttach_AddfileExecute(Sender: TObject);
+    procedure actAttach_downfileExecute(Sender: TObject);
+    procedure actAttach_downfileUpdate(Sender: TObject);
+    procedure lvAttachDblClick(Sender: TObject);
   private
     { Private declarations }
     fPageType : TPageTypeRec;
+    fFileIconIndexList : TStringList; //附件的图示
   public
     { Public declarations }
 
@@ -94,6 +118,12 @@ type
     procedure Closefrm; override;  //关闭显示发生的事件
     class function GetModuleID : integer;override;
 
+    procedure ClearAttachFile();
+        //取文件的图标
+    function GetFileIconIndex(FileName:string;AImageList:TImageList):integer;
+    procedure LoadAttach(ABugID:Integer);     //加载附件
+
+
     function  GetPrtyPageCount(AWhereStr:String):integer; //取出页总数
     procedure LoaPrtyList(APageIndex:integer;AWhereStr:String);
 
@@ -101,6 +131,7 @@ type
 
 implementation
 uses
+  ShellAPI,
   ClinetSystemUnits,
   ClientTypeUnits, DmUints;
 
@@ -118,15 +149,14 @@ end;
 
 procedure TPrototypeClientDlg.Closefrm;
 begin
-
-  ;
   
 end;
 
 procedure TPrototypeClientDlg.freeBase;
 begin
   inherited;
-
+  ClearAttachFile();
+  fFileIconIndexList.Free;
 end;
 
 class function TPrototypeClientDlg.GetModuleID: integer;
@@ -145,6 +175,8 @@ const
 begin
   inherited;
   fLoading := False;
+  fFileIconIndexList := TStringList.Create;
+
   mycds := TClientDataSet.Create(nil);
   try
     mycds.data := ClientSystem.fDbOpr.ReadDataSet(PChar(glSQL1));
@@ -153,6 +185,7 @@ begin
       cdsPrtyList.Close;
     cdsPrtyList.FieldDefs.Clear;
     cdsPrtyList.FieldDefs.Assign(mycds.FieldDefs);
+
     with cdsPrtyList.FieldDefs do
     begin
       myField := AddFieldDef;
@@ -162,6 +195,11 @@ begin
       myField := AddFieldDef;
       myField.Name := 'ZAUTOID';   //序号
       myField.DataType := ftInteger;
+
+      myField := AddFieldDef;
+      myField.Name := 'ZID';   //对应 PRTY_ID;
+      myField.DataType := ftInteger;
+
 
       for i:=0 to Count -1 do
       begin
@@ -266,7 +304,7 @@ var
 const
   //glSQL = 'select * from TB_ANT order by ZDATE desc';  //ZID desc
   glSQL = 'exec pt_SplitPage ''TB_PROTOTYPE '',' +
-          '''PRTY_GUID,PRTY_NAME,ZUSER_ID,PRTY_DATETIME, ' +
+          '''PRTY_GUID,PRTY_NAME,ZUSER_ID,PRTY_DATETIME,PRTY_ID,' +
           'PRTY_DIRNAME'',' +
           '''%s'',20,%d,%d,1,''%s''';
 
@@ -282,10 +320,12 @@ begin
 
   myb := fLoading;
   fLoading := True;
+  
   cdsPrtyList.DisableControls;
   ClientSystem.BeginTickCount;
   ShowProgress('读取数据...',0);
   cdstemp := TClientDataSet.Create(nil);
+
   try
     while not cdsPrtyList.Eof do
       cdsPrtyList.Delete;
@@ -298,9 +338,11 @@ begin
       cdsPrtyList.Append;
       cdsPrtyList.FieldByName('ZISNEW').AsBoolean := False;
       cdsPrtyList.FieldByName('ZAUTOID').AsString := inttostr(myc+(APageIndex-1)*20);Inc(myc);
+      cdsPrtyList.FieldByName('ZID').AsInteger := cdstemp.fieldByName('PRTY_ID').AsInteger;
 
       for i:=0 to cdstemp.Fields.Count -1 do
       begin
+        if cdstemp.Fields[i].FieldName <>'PRTY_ID' then
          cdsPrtyList.FieldByName(cdstemp.Fields[i].FieldName).AsVariant :=
             cdstemp.FieldByName(cdstemp.Fields[i].FieldName).AsVariant;
       end;
@@ -329,7 +371,8 @@ begin
   DataSet.FieldByName('ZISNEW').AsBoolean := True;
   DataSet.FieldByName('PRTY_GUID').AsString := NewGuid;
   DataSet.FieldByName('ZUSER_ID').AsInteger := ClientSystem.fEditer_id;
-  DataSet.FieldByName('PRTY_DATETIME').AsDateTime := ClientSystem.fDbOpr.GetSysDateTime; 
+  DataSet.FieldByName('PRTY_DATETIME').AsDateTime := ClientSystem.fDbOpr.GetSysDateTime;
+  DataSet.FieldByName('ZID').AsInteger := -1;
 end;
 
 procedure TPrototypeClientDlg.pgcPrtyChanging(Sender: TObject;
@@ -366,6 +409,8 @@ const
            ' values(''%s'',''%s'',%d,''%s'',''%s'')';
   gc_SQL2 = 'update TB_PROTOTYPE set PRTY_NAME=''%s'',PRTY_DIRNAME=''%s'' where PRTY_GUID=''%s'' ';
 begin
+  if fLoading then Exit;
+  
   //新建
   if DataSet.FieldByName('ZISNEW').AsBoolean then
   begin
@@ -544,6 +589,182 @@ begin
       fPageType.fIndexCount]);
 
 
+end;
+
+procedure TPrototypeClientDlg.LoadAttach(ABugID: Integer);
+var
+  mycds : TClientDataSet;
+  mySQL : string;
+  myItem : TListItem;
+  myData : PAttachFileRec;
+  myb : Boolean;
+  myExt : string;
+const
+  glSQL = 'select * from  TB_FILE_ITEM where ZCONTENTID=%d and ZSTYPE=8 Order by ZEDITDATETIME';
+begin
+  mycds := TClientDataSet.Create(nil);
+  myb := fLoading;
+  fLoading := True;
+  lvAttach.Items.BeginUpdate;
+  try
+
+    ClearAttachFile;
+    mySQL := format(glSQL,[ABugID]);
+    mycds.Data := ClientSystem.fDbOpr.ReadDataSet(PChar(mySQL));
+    if mycds.RecordCount > 0 then
+    begin
+      mycds.First;
+      while not mycds.Eof do
+      begin
+        myItem := lvAttach.Items.Add;
+        myItem.Caption := mycds.FieldByName('ZNAME').AsString;
+        myExt := mycds.FieldByname('ZEXT').AsString;
+        if fFileIconIndexList.IndexOfName(myExt) >=0 then
+          myItem.ImageIndex := StrToIntDef(fFileIconIndexList.Values[myExt],0)
+        else begin
+          myItem.ImageIndex := GetFileIconIndex('c:\' + myItem.Caption,ilAttach);
+          fFileIconIndexList.Add(Format('%s=%d',[myExt,myItem.ImageIndex]));
+        end;
+
+        New(myData);
+        myData^.fName   := myItem.Caption;
+        mydata^.ffileid := mycds.FieldByName('ZID').AsInteger;
+        myData^.fFileExt := mycds.FieldByname('ZEXT').AsString;
+        myItem.Data    := mydata;
+
+        mycds.Next;
+      end;
+    end;
+
+  finally
+    mycds.Free;
+    lvAttach.Items.EndUpdate;
+    fLoading := myb;
+  end;
+
+end;
+
+procedure TPrototypeClientDlg.ClearAttachFile;
+var
+  i : Integer;
+  myItem : PAttachFileRec;
+begin
+  for i:=0 to lvAttach.Items.Count -1 do
+  begin
+    myItem := lvAttach.Items[i].Data;
+    Dispose(myItem);
+  end;
+  lvAttach.Clear;
+end;
+
+function TPrototypeClientDlg.GetFileIconIndex(FileName: string;
+  AImageList: TImageList): integer;
+var
+  sinfo:SHFILEINFO;
+  myIcon:TIcon;
+  nIndex : integer;
+begin
+  Result  := -1;
+  FillChar(sinfo, SizeOf(sinfo),0);
+  SHGetFileInfo(PChar(FileName),FILE_ATTRIBUTE_NORMAL,sinfo,SizeOf(sInfo),
+  SHGFI_USEFILEATTRIBUTES or SHGFI_ICON or SHGFI_LARGEICON{SHGFI_SMALLICON});
+  if sinfo.hIcon>0 then
+  begin
+    myIcon:=TIcon.Create;
+    myIcon.Handle:=sinfo.hIcon;
+    nIndex:= AImageList.AddIcon(myIcon);
+    myIcon.Free;
+    Result := nIndex;
+  end;
+end;
+
+
+procedure TPrototypeClientDlg.cdsPrtyListAfterScroll(DataSet: TDataSet);
+var
+  myID : Integer;
+begin
+  //
+  if fLoading then Exit;
+
+  myID := cdsPrtyList.fieldByName('ZID').AsInteger;
+  LoadAttach(myID);
+end;
+
+procedure TPrototypeClientDlg.actAttach_AddfileExecute(Sender: TObject);
+var
+  myAid,myid : Integer;
+  myfilename : string;
+begin
+  if fLoading then Exit;
+
+  myAid  :=  cdsPrtyList.fieldByName('ZID').AsInteger;
+  if myAid < 0 then
+  begin
+    Application.MessageBox('刚创建的原型请刷新一下才增加附件','增加附件',MB_ICONWARNING+MB_OK);
+    Exit;
+  end;
+
+  if not dlgOpen1.Execute then Exit;
+
+  myfilename := dlgOpen1.FileName;
+
+
+  //上传中
+  ShowProgress('上传文件中...',0);
+  try
+    myid := ClientSystem.fDbOpr.UpFile(8,myAid,myfilename);
+  finally
+    HideProgress;
+  end;
+
+  if myid = 0 then
+  begin
+    LoadAttach(myAid);
+  end
+  else
+    Application.MessageBox(PChar('上传失败,错误号:' +inttostr(myid) ),'提示',
+      MB_ICONERROR);
+end;
+
+procedure TPrototypeClientDlg.actAttach_downfileExecute(Sender: TObject);
+var
+  myfilename : string;
+  myData : PAttachFileRec;
+  myi : Integer;
+begin
+  //
+  myData := lvAttach.Selected.Data;
+  dlgSave1.Filter := Format('*%s|*%s',[myData^.fFileExt,myData^.fFileExt]);
+  dlgSave1.FileName := myData^.fName;
+  dlgSave1.DefaultExt := myData^.fFileExt;
+  
+  if not dlgSave1.Execute then
+    Exit;
+  myfilename := dlgSave1.FileName;
+  myi := ClientSystem.fDbOpr.DownFile(myData^.ffileid,myfilename);
+  if myi = 0 then
+  begin
+    Application.MessageBox('下载成功','提示',MB_ICONQUESTION);
+  end
+  else
+    Application.MessageBox(PChar('下载失败,错误号:' + inttostr(myi)),'提示',MB_ICONERROR);
+
+
+end;
+
+
+procedure TPrototypeClientDlg.actAttach_downfileUpdate(Sender: TObject);
+begin
+  (Sender as TAction).Enabled := Assigned(lvAttach.Selected)
+  and Assigned(lvAttach.Selected.Data);
+end;
+
+procedure TPrototypeClientDlg.lvAttachDblClick(Sender: TObject);
+begin
+  inherited;
+  //
+  if Assigned(lvAttach.Selected) and Assigned(lvAttach.Selected.Data) then
+    actAttach_downfileExecute(nil);   
 end;
 
 end.
