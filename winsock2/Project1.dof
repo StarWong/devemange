@@ -90,11 +90,11 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=
+OutputDir=..\app
 UnitOutputDir=
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=;C:\PROGRA~1\STEEMA~1\TEECHA~1\Delphi7\Lib
+SearchPath=../Class;../res
 Packages=vcl;rtl;vclx;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;bdertl;vcldbx;webdsnap;adortl;vclactnband;vclshlctrls;dclOffice2k;FR7;dbexpress;dbxcds;inetdb;websnap;ibxpress;dss;visualclx;visualdbclx;mwedit;cxLibraryVCLD7;dxThemeD7;cxDataD7;Jcl;JvSystemD7R;JvCoreD7R;JvStdCtrlsD7R;JvCtrlsD7R;JclVcl;JvCmpD7R;JvCustomD7R;JvDlgsD7R;JvCryptD7R;JvMMD7R;JvNetD7R;JvAppFrmD7R;JvDBD7R;JvBDED7R;JvInterpreterD7R;JvBandsD7R;JvPluginD7R;JvJansD7R;JvGlobusD7R;JvPrintPreviewD7R;JvPageCompsD7R;JvValidatorsD7R;JvUIBD7R;JvWizardD7R;JvTimeFrameworkD7R;JvHMID7R;JvManagedThreadsD7R;JvXPCtrlsD7R;JvDockingD7R;JvDotNetCtrlsD7R;JvEDID7R;JvRuntimeDesignD7R;mlCadDraw;mlBudget;CPortLib7;Rz30Ctls70;Rz30DBCtls70;EQTLD6;dxComnD7;Tee77;TeeUI77;TeeDB77;TeePro77;TeeGL77;TeeImage77;TeeLanguage77
 Conditionals=
 DebugSourceDirs=
@@ -115,7 +115,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=1
-Build=50
+Build=51
 Debug=0
 PreRelease=0
 Special=0
@@ -126,7 +126,7 @@ CodePage=936
 [Version Info Keys]
 CompanyName=
 FileDescription=
-FileVersion=1.0.1.50
+FileVersion=1.0.1.51
 InternalName=
 LegalCopyright=
 LegalTrademarks=
@@ -134,11 +134,6 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
-[Excluded Packages]
-c:\program files\borland\delphi7\Projects\Bpl\dxPSLnksD7.bpl=ExpressPrinting System ReportLinks (Standard) by Developer Express Inc.
-c:\program files\borland\delphi7\Bin\dcldss70.bpl=Borland Decision Cube Components
-D:\VCL\XL Report 4\D7Units\d7XLR4_D.bpl=XL Report design-time package for Delphi 7.0
-c:\program files\borland\delphi7\Projects\Bpl\dcldxPSCoreD7.bpl=ExpressPrinting System (core 2.2) by Developer Express Inc.
 [HistoryLists\hlConditionals]
 Count=2
 Item0=FASTXX;Release
@@ -156,7 +151,8 @@ Count=2
 Item0=..\..\dcu
 Item1=../dcu
 [HistoryLists\hlOutputDirectorry]
-Count=3
+Count=4
 Item0=..\..\app\App
-Item1=..\..\app
-Item2=../../App
+Item1=..\app
+Item2=..\..\app
+Item3=../../App

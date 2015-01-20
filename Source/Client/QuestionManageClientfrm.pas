@@ -1357,7 +1357,7 @@ var
   myUserName : string;
   myindex : Integer;
 const
-  gl_SQLTXT = 'select count(*) from TB_QUESTION where ZQCODE Like ''%%%s-%%'' ';
+  gl_SQLTXT = 'select count(*) from TB_QUESTION where ZQCODE Like ''%%%s-%%'' and (ZSTOP=0) ';
   gc_SQLTXT2 = 'select * from TB_QUESTION where (ZQCODE Like ''%%%s-%%'') and (ZSTOP=0)';
 begin
   //…˙≥… ‘Ã‚
