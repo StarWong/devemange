@@ -1424,7 +1424,7 @@ begin
               DM.cdsUserAll.Next;
             end;
             myslAnswer.Add('=========================================================');
-            myslAnswer.Add(IntToStr(myindex) +'、' + '作者:'+ myUserName +  #13#10 + mycds.FieldByName('ZANSWER').AsString);
+            myslAnswer.Add(IntToStr(myindex) +'、' + mycds.FieldByName('ZQTITLE').AsString + ' 出题者:'+ myUserName +  #13#10 + mycds.FieldByName('ZANSWER').AsString);
             inc(myindex);
             mysl.Add(IntToStr(myc)); //记下编号
             Break;
