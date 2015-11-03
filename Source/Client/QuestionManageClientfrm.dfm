@@ -1,6 +1,6 @@
 inherited QuestionManageClientDlg: TQuestionManageClientDlg
-  Left = 92
-  Top = 193
+  Left = 171
+  Top = 38
   Width = 1004
   Height = 679
   Caption = #31561#32423#39064#24211

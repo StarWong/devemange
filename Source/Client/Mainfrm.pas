@@ -113,6 +113,8 @@ type
     tmrsetselfSelectUser: TTimer;
     actTool_SetSelfSelectUser: TAction;
     N25: TMenuItem;
+    acttool_CheckTrans: TAction;
+    ADO1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure actmod_FilesExecute(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -155,6 +157,7 @@ type
     procedure actMod_PrototypeExecute(Sender: TObject);
     procedure tmrsetselfSelectUserTimer(Sender: TObject);
     procedure actTool_SetSelfSelectUserExecute(Sender: TObject);
+    procedure acttool_CheckTransExecute(Sender: TObject);
   private
     fChildform : TList; //所有子窗口的对象
     fCurrentChildform : TBaseChildDlg;
@@ -1173,6 +1176,18 @@ begin
       mysl.SaveToFile(myfilename);
   finally
     mysl.Free;
+  end;
+end;
+
+procedure TMainDlg.acttool_CheckTransExecute(Sender: TObject);
+begin
+  if MessageBox(Handle,'如有ADO事务问题就不会提示错误，否则说明事务还没有提交或回滚。',
+    '提示',MB_ICONQUESTION+MB_YESNO)=IDNO then Exit;
+
+  try
+    ClientSystem.fDbOpr.CommitTrans;
+  except
+    ShowMessage('事务没有问题，请找其他地方。');
   end;
 end;
 

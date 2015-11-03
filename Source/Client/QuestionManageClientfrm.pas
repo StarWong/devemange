@@ -284,11 +284,12 @@ var
   mycds : TClientDataSet;
   myfield : TFieldDef;
   myb : Boolean;
-  mycount : Integer;
+  mycount,myzfcount : Integer;
 const
   gc_SQLTXT = 'select * from TB_QUESTION where 1=0';
   gc_SQLTXT2 = 'select isnull(count(ZQCODE),0) from TB_QUESTION';
   gc_SQLTXT3 = 'select * from TB_QUESTION_DEVELEVEL where 1=0';
+  gc_SQLTXT4 = 'select isnull(count(ZQCODE),0) from TB_QUESTION where ZSTOP=1';
 begin
 
   fPageTypeList := TList.Create;
@@ -296,7 +297,8 @@ begin
   LoadQustionClass();
 
   mycount := ClientSystem.fDbOpr.ReadInt(PChar(gc_SQLTXT2));
-  lblQuestionCount.Caption := Format('总题目数:%d',[mycount]);
+  myzfcount := ClientSystem.fDbOpr.ReadInt(PChar(gc_SQLTXT4));
+  lblQuestionCount.Caption := Format('总题目数:%d，其中作废题目数:%d。',[mycount,myzfcount]);
 
   myb := fLoading;
   fLoading := True;

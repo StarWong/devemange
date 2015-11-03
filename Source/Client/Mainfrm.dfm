@@ -405,6 +405,11 @@ object MainDlg: TMainDlg
       Caption = #35774#32622#25105#30340#24120#29992#32852#31995#20154'...'
       OnExecute = actTool_SetSelfSelectUserExecute
     end
+    object acttool_CheckTrans: TAction
+      Category = #24037#20855
+      Caption = 'ADO'#21153#20107#20462#22797'...'
+      OnExecute = acttool_CheckTransExecute
+    end
   end
   object ImageList1: TImageList
     Left = 112
@@ -1299,6 +1304,9 @@ object MainDlg: TMainDlg
       end
       object N25: TMenuItem
         Action = actTool_SetSelfSelectUser
+      end
+      object ADO1: TMenuItem
+        Action = acttool_CheckTrans
       end
     end
     object P1: TMenuItem

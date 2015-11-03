@@ -144,7 +144,16 @@ begin
   //为是如连接中断会产生出错,所以放大
   ReSetTimer;
   if RemoteServer.Connected then
-    RemoteServer.AppServer.BeginTrans;
+  begin
+    try
+      RemoteServer.AppServer.BeginTrans;
+    except
+      //因为有部分事务还没有提交就，就报错。所以增加。
+      raise Exception.Create('事务不能开始，可能出现了异步操作同时启动务事了，请在【工具】修改ADO事务。');
+      //RemoteServer.AppServer.CommitTrans;
+      //RemoteServer.AppServer.BeginTrans;
+    end;
+  end;
 end;
 
 procedure TBfssDBOpr.CommitTrans;
