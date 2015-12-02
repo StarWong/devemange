@@ -1296,13 +1296,33 @@ begin
     if mycds.RecordCount > 0 then
     begin
       //
-      // 已超过15分钟的情况
+      // 已超过15分钟的情况，将15分钟修改为45分钟
       //
       myv :=ClientSystem.fDbOpr.GetSysDateTime -  mycds.FieldByName('ZSTATETIME').AsDateTime;
       if (mycds.FieldByName('ZSTATECODE').AsInteger in [Ord(sc_end)]) or
-         (myv>0.015) or
+         (myv>0.045) or
          (mycds.FieldByName('ZUSER_ID').AsInteger=ClientSystem.fEditer_id) then
       begin
+
+        if (not mycds.FieldByName('ZSTATECODE').AsInteger in [Ord(sc_end)]) and
+           (myv>0.045) then
+        begin
+          DM.cdsUser.First;
+          while not DM.cdsUser.Eof do
+          begin
+            if DM.cdsUser.FieldByName('ZID').AsInteger =
+              mycds.FieldByName('ZUSER_ID').AsInteger then
+            begin
+              myName := DM.cdsUser.FieldByName('ZNAME').AsString;
+              break;
+            end;
+            DM.cdsUser.Next;
+          end;
+          if MessageBox(Handle, PChar(myName + '编译已超过45分钟，请先确定已否编好，你是否要强制执行你的编译？'),'编译',MB_ICONQUESTION+MB_YESNO)=IDNO then
+            Exit;
+        end;
+
+
         mySQL := format(gl_SQLTXT2,[
           Ord(sc_begint),
           ClientSystem.fEditer_id,
@@ -1328,7 +1348,7 @@ begin
           DM.cdsUser.Next;
         end;
 
-        mymsg := '已有人在编译了,请稍候,最多15分钟。'+#13#10 +
+        mymsg := '已有人在编译了,请稍候,最多45分钟。你如已等45分钟就强制执行你的编译操作。'+#13#10 +
              '在编译人: ' + myName + #13#10 +
              '编译开始时间:' + datetimetostr(mycds.FieldByName('ZSTATETIME').AsDateTime) + #13#10 +
              '编译内容:' + mycds.FieldByName('ZNOTE').AsString ;
