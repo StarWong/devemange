@@ -979,9 +979,10 @@ var
   mySql : string;
 const
   //glSQL = 'select * from TB_ANT order by ZDATE desc';  //ZID desc
+  // ZCOMPILETEXT 去掉这个，因为有时编译时发现有特码，打开表出错。
   glSQL = 'exec pt_SplitPage ''TB_ANT '',' +
           '''ZGUID,ZID,ZNAME,ZPRO_ID,ZIP,ZPYFILE,ZREMARK, ' +
-          'ZDATE,ZSVN,ZVERSION,ZSVN_URL,ZSVN_LATEST_VERSION,ZCOMPILETEXT,ZLANGTYPE,ZWEBURL,ZLOCALSVNBAT,ZCOMPLIEPARAM'',' +
+          'ZDATE,ZSVN,ZVERSION,ZSVN_URL,ZSVN_LATEST_VERSION,ZLANGTYPE,ZWEBURL,ZLOCALSVNBAT,ZCOMPLIEPARAM'',' +
           '''%s'',20,%d,%d,1,''%s''';
 
 begin
